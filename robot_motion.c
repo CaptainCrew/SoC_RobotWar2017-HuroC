@@ -38,7 +38,9 @@ void Order_to_Robot(int motion_number)
 
   switch(motion_number)
   {
+    /*
       case 1:
+      printf("F_Walk\n");
       F_walk();
       break;
 
@@ -53,6 +55,7 @@ void Order_to_Robot(int motion_number)
       case 4:
       Turn_right();
       break;
+      */
   }
 	uart_close();
   return;

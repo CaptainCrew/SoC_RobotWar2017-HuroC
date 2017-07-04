@@ -23,17 +23,18 @@ int main(int argc, char **argv)
 	SURFACE* bmpsurf = 0;
 	U16* fpga_videodata = (U16*)malloc(180 * 120 * 2);
 	init_robot();
+	direct_camera_display_off();
+
 	while (1)
 	{
 		clear_screen();
-
-		int ch = getchar();
 		int motion;
 		//printf("read fpga video data\n");
 		read_fpga_video_data(fpga_videodata); //fpga로부터 처리된 영상데이터를 fpga_videodata에 받아옴
 		draw_fpga_video_data(fpga_videodata, 10, 10);	//보드에 fpga영상 데이터를 출력
 		flip();
-		
+
+
 		MCU_process(fpga_videodata); // MCU를 이용한 영상처리
 		motion=MCU_analysis(fpga_videodata); // 영상에대한 분석작업
 		Order_to_Robot(motion); // 가장 적절한 모션을 수행
