@@ -16,6 +16,8 @@
 
 int main(int argc, char **argv)
 {
+	int state = Start;
+
 	if (open_graphic() < 0) {
 		return -1;
 	}
@@ -34,8 +36,7 @@ int main(int argc, char **argv)
 		draw_fpga_video_data_full(fpga_videodata);	//보드에 fpga영상 데이터를 출력
 		flip();
 
-
-		MCU_process(fpga_videodata); // MCU를 이용한 영상처리
+		//MCU_process(fpga_videodata); // MCU를 이용한 영상처리
 		motion=MCU_analysis(fpga_videodata); // 영상에대한 분석작업
 		Order_to_Robot(motion); // 가장 적절한 모션을 수행
 /*

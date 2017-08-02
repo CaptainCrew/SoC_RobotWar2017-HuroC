@@ -137,6 +137,8 @@ wire [9:0] YData2 = {Y_Data2, 2'b00};
 wire [9:0] CbData2 = {Cb_Data2, 2'b00};
 wire [9:0] CrData2 = {Cr_Data2, 2'b00};
 
+reg [2:0] color;//W = 0,K,R,G,B,Y
+
 always @ (posedge clk_llc or negedge resetx)
    if (~resetx)
       begin
@@ -149,6 +151,15 @@ always @ (posedge clk_llc or negedge resetx)
      B1_int <= (const3 * (CrData1 - 'd512));
      B2_int <= (const4 * (CbData1 - 'd512));
      C_int <= (const5 * (CbData1 - 'd512));
+	  
+	  if((255 - Y_Data1)*(255 - Y_Data1) + (128 - Cb_Data1)*(128 - Cb_Data1)*(128 - Cb_Data1)*(128 - Cb_Data1) + (128 - Cr_Data1)*(128 - Cr_Data1)*(128 - Cr_Data1)*(128 - Cr_Data1) < 'd26384) color <= 3'b000;
+	  else if((Y_Data1)*(Y_Data1) + (128 - Cb_Data1)*(128 - Cb_Data1)*(128 - Cb_Data1)*(128 - Cb_Data1) + (128 - Cr_Data1)*(128 - Cr_Data1)*(128 - Cr_Data1)*(128 - Cr_Data1) < 'd20384) color <= 3'b001;
+	  else if((77 - Y_Data1)*(77 - Y_Data1) + (84 - Cb_Data1)*(84 - Cb_Data1) + (249 - Cr_Data1)*(249 - Cr_Data1) < 'd16384) color <= 3'b010;
+	  else if((128 - Y_Data1)*(128 - Y_Data1) + (10 - Cb_Data1)*(10 - Cb_Data1) + (10 - Cr_Data1)*(10 - Cr_Data1) < 'd18384) color <= 3'b011;
+	  else if((35 - Y_Data1)*(35 - Y_Data1) + (255 - Cb_Data1)*(255 - Cb_Data1) + (130 - Cr_Data1)*(130 - Cr_Data1) < 'd16384) color <= 3'b100;
+	  else if((Y_Data1 > 'd128) && (Cr_Data1 > 'd110) && (Cb_Data1 < 'd120)) color <= 3'b101;
+	  else color <= 3'b111;
+	  
      end
 	else if (CodeCnt==2'b11)
      begin
@@ -157,6 +168,15 @@ always @ (posedge clk_llc or negedge resetx)
      B1_int <= (const3 * (CrData2 - 'd512));
      B2_int <= (const4 * (CbData2 - 'd512));
      C_int <= (const5 * (CbData2 - 'd512));
+	  
+	  if((255 - Y_Data2)*(255 - Y_Data2) + (128 - Cb_Data2)*(128 - Cb_Data2)*(128 - Cb_Data2)*(128 - Cb_Data2) + (128 - Cr_Data2)*(128 - Cr_Data2)*(128 - Cr_Data2)*(128 - Cr_Data2) < 'd26384) color <= 3'b000;
+	  else if((Y_Data2)*(Y_Data2) + (128 - Cb_Data2)*(128 - Cb_Data2)*(128 - Cb_Data2)*(128 - Cb_Data2) + (128 - Cr_Data2)*(128 - Cr_Data2)*(128 - Cr_Data2)*(128 - Cr_Data2) < 'd20384) color <= 3'b001;
+	  else if((77 - Y_Data2)*(77 - Y_Data2) + (84 - Cb_Data2)*(84 - Cb_Data2) + (249 - Cr_Data2)*(249 - Cr_Data2) < 'd16384) color <= 3'b010;
+	  else if((128 - Y_Data2)*(128 - Y_Data2) + (10 - Cb_Data2)*(10 - Cb_Data2) + (10 - Cr_Data2)*(10 - Cr_Data2) < 'd18384) color <= 3'b011;
+	  else if((35 - Y_Data2)*(35 - Y_Data2) + (255 - Cb_Data2)*(255 - Cb_Data2) + (130 - Cr_Data2)*(130 - Cr_Data2) < 'd16384) color <= 3'b100;
+	  else if((Y_Data2 > 'd128) && (Cr_Data2 > 'd110) && (Cb_Data2 < 'd120)) color <= 3'b101;
+	  else color <= 3'b111;
+	  
      end
 	  
 always @ (posedge clk_llc or negedge resetx)
@@ -166,10 +186,52 @@ always @ (posedge clk_llc or negedge resetx)
       end
    else if ((CodeCnt==2'b10) | (CodeCnt==2'b11))
      begin
-     R_int <= X_int + A_int;  
-     G_int <= X_int - B1_int - B2_int; 
-     B_int <= X_int + C_int; 
-     end
+	  	if(color == 3'b000)
+		begin
+		R_int[20:19] <= 2'b01;  
+		G_int[20:19] <= 2'b01;  
+		B_int[20:19] <= 2'b01;  
+		end
+		else if(color == 3'b001)
+		begin
+		R_int[20] <= 1'b1;  
+		G_int[20] <= 1'b1;  
+		B_int[20] <= 1'b1;  
+		end
+		else if(color == 3'b010)
+		begin
+		R_int[20:19] <= 2'b01;  
+		G_int[20:19] <= 2'b11;  
+		B_int[20:19] <= 2'b11;  
+		end
+		else if(color == 3'b011)
+		begin
+		R_int[20:19] <= 2'b11;  
+		G_int[20:19] <= 2'b01;  
+		B_int[20:19] <= 2'b11;  
+		end
+		else if(color == 3'b100)
+		begin
+		R_int[20:19] <= 2'b11;  
+		G_int[20:19] <= 2'b11;  
+		B_int[20:19] <= 2'b01;  
+		end
+		else if(color == 3'b101)
+		begin
+		R_int[20:19] <= 2'b01;  
+		G_int[20:19] <= 2'b01;  
+		B_int[20:19] <= 2'b11;  
+		end
+		else if(color == 3'b111)
+		begin
+		R_int[20:19] <= 2'b01;  
+		G_int[20:19] <= 2'b11;  
+		B_int[20:19] <= 2'b01;  
+		/*R_int <= X_int + A_int;  
+		G_int <= X_int - B1_int - B2_int; 
+		B_int <= X_int + C_int;*/ 
+		end
+	end
 
 
 wire [ 4:0] R = (R_int[20]) ? 5'b0 : (R_int[19:18] == 2'b0) ? R_int[17:13] : 5'b11111;
