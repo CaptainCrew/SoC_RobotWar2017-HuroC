@@ -1,6 +1,6 @@
 /************************************************************************
   Title     : Robot Body Protocol Source File
-  File name : robot_protocol.c    
+  File name : robot_protocol.c
 
   Author    : adc inc. (oxyang@adc.co.kr)
   History
@@ -21,6 +21,7 @@ void DelayLoop(int delay_time)
 void init_robot()
 {
 	unsigned char Init_Buffer[10] = {0,};
+	printf("init\n");
 	Init_Buffer[0] = 0xff;
 	Init_Buffer[1] = 0xff;
 	Init_Buffer[2] = 0x0a;
@@ -37,8 +38,8 @@ void Send_Command(unsigned char CS1, unsigned char CS2, unsigned char DATA0)
 {
 	int i;
 	unsigned char Command_Buffer[9] = {0,};
-	
-	Command_Buffer[0] = 0xff;	
+
+	Command_Buffer[0] = 0xff;
 	Command_Buffer[1] = 0xff;
 	Command_Buffer[2] = 0x09;
 	Command_Buffer[3] = 0xfd;
@@ -47,7 +48,7 @@ void Send_Command(unsigned char CS1, unsigned char CS2, unsigned char DATA0)
 	Command_Buffer[6] = CS2;
 	Command_Buffer[7] = DATA0;
 	Command_Buffer[8] = 0x00;
-	
+	printf("send_command\n");
 	uart1_buffer_write(Command_Buffer, 9);
 }
 
@@ -60,13 +61,13 @@ void Motion(unsigned char DATA0)
 {
 	unsigned char CS1;
 	unsigned char CS2;
-	
+	printf("Motion\n");
 	CS1 = (Packet^pID^CMD^DATA0^DATA1) & 0xfe;
 	CS2 = (~(Packet^pID^CMD^DATA0^DATA1)) & 0xfe;
 	Send_Command(CS1, CS2, DATA0);
-	printf("CS1=%x\n", CS1);
-	printf("CS2=%x\n", CS2);
-	DelayLoop(15000000);		// 3second delay
+	//printf("CS1=%x\n", CS1);
+	//printf("CS2=%x\n", CS2);
+	//DelayLoop(15000000);		// 3second delay
 }
 
 void F_walk()
@@ -85,7 +86,7 @@ void Turn_left()
 }
 
 void Turn_right()
-{	
+{
 	Motion(0x03);
 }
 
