@@ -57,4 +57,3 @@ void uart1_buffer_write(unsigned char *buf, int size);
 void uart1_buffer_read(unsigned char *buf, int size);
 
 #endif // __UART_API_H__
-
