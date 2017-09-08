@@ -1,4 +1,4 @@
- #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -8,193 +8,116 @@
 #include "img_analysis.h"
 #include "robot_motion.h"
 
-int MCU_analysis(U16* buf, int* state)
-{
-  int i, j;
-  int R_cnt = 0,G_cnt = 0,B_cnt = 0,Y_cnt = 0,K_cnt = 0;
-  int R_avg = 0,K_avg = 0;
 
-  switch(*state)
-  {
-    case Start:
-      for(i = 30;i<150;i++)
-      {
-        for(j = 118;j > 60;j--)
-        {
-          switch(buf[j*180+i])
-          {
-            case 0x0000:
-             buf[j*180+i] = 0x7ff;
-             K_cnt++;
-             j = 0;
-             break;
-            case 0xffe0:
-            case 0xf800:
-             buf[j*180+i] = 0x7ff;
-             Y_cnt++;
-             j = 0;
-             break;
-          }
-        }
-      }
+typedef char bool;
+typedef char Color;
 
-      if(Y_cnt > 40 && K_cnt > 40)
-      {
-          *state = Right_Angle_Barricade_Wait;
-          return F_WALK;
-      }
-      return 0xff;
+const char RED = 0, GREEN = 1, BLUE = 2, WHITE = 3, BLACK = 4, ORANGE = 5, YELLOW = 6, NONE = 7;
+const int HEIGHT = 120, WIDTH = 180;
 
-    case Right_Angle_Barricade_Wait:
-      for(i = 30;i<150;i++)
-      {
-        for(j = 118;j > 60;j--)
-        {
-          switch(buf[j*180+i])
-          {
-            case 0x0000:
-             buf[j*180+i] = 0x7ff;
-             K_cnt++;
-             j = 0;
-             break;
-            case 0xffe0:
-            case 0xf800:
-             buf[j*180+i] = 0x7ff;
-             Y_cnt++;
-             j = 0;
-             break;
-          }
-        }
-      }
 
-      if(Y_cnt < 40 && K_cnt < 40)
-      {
-        *state = Right_Angle_Barricade_Go;
-        return F_WALK_20;
-      }
-
-    return 0xff;
-
-    case Right_Angle_Barricade_Go:
-      *state = Stair_READY;
-    return F_WALK_5;
-
-    case Stair:
-    for(i = 30;i<60;i++)
-    {
-      for(j = 119;j>60;j++)
-      {
-        if(buf[j*180+i] == 0x0000)
-        {
-          K_cnt++;
-          break;
-        }
-      }
-    }
-
-    if(K_cnt > 20)return R_TURN;
-
-    K_cnt = 0;
-
-    for(i = 150;i < 180;i++)
-    {
-      for(j = 119;j>60;j++)
-      {
-        if(buf[j*180+i] == 0x0000)
-        {
-          K_cnt++;
-          break;
-        }
-      }
-    }
-
-    if(K_cnt > 20)return L_TURN;
-
-    R_cnt = 0;
-    for(i = 60;i<120;i++)
-    {
-      for(j = 110;j<60;j--)
-      {
-        if(buf[j*180+i] == 0xf800)
-        {
-            R_cnt++;
-            break;
-        }
-      }
-    }
-
-    if(R_cnt > 40)
-    {
-        *state = Stair_READY;
-        return F_WALK_5;
-    }
-
-    return F_WALK;
-
-    case Stair_READY:
-
-    for(i = 0;i<180;i++)
-    {
-      if(buf[80*180+i] == 0xf800)
-      {
-        R_cnt++;
-        R_avg += i;
-      }
-    }
-
-    R_avg /= R_cnt;
-
-    if(R_avg < 70)
-      return L_WALK;
-    else if(R_avg > 110)
-      return R_WALK;
-    else
-    {
-      *state = Hurdle;
-      return STAIR_LOL;
-    }
-    break;
-
-    case Hurdle:
-
-      K_cnt = K_avg = 0;
-
-      for(i = 70;i<110;i++)
-      {
-        for(j = 110;j<60;j++)
-          if(buf[j*180+i]==0x0000)
-          {
-            K_cnt++;
-            K_avg += i;
-          }
-          else if(buf[j*180+i] == 0x001f)
-            B_cnt++;
-      }
-
-      if(B_cnt > 30)
-      {
-        *state = Hurdle_Lol;
-        return F_WALK_20;
-      }
-      else if(K_cnt < 20)
-        return F_WALK_5;
-      else
-      {
-          K_avg /= K_cnt;
-          if(K_avg < 90)
-            return R_TURN;
-          else
-            return L_TURN;
-      }
-
-    break;
-
-    case Hurdle_Lol:
-    *state = Bridge_Ready;
-    return HURDLE_LOL;
-
-    return 0xff;
-  }
-
-  return 0xff;
+U16 *buf;
+Color *labelData;
+Color getColor(int j, int i) {
+	return labelData[i+180*j];
 }
+void setBufColor(int j, int i, Color color) {
+	U16 lbc[8]={0xF800, 0x07E0, 0x001F, 0xFFFF, 0x0000, 0xFC00, 0xFFE0, 0xF81F};
+	buf[i+180*j] = lbc[color];
+}
+
+int max(int a, int b) { return a>b?a:b; }
+int min(int a, int b) { return a<b?a:b; }
+
+
+int i, j, k, l;
+bool isStartBarricadeOpen();
+bool isEndBarricadeOpen();
+void lineCheck();
+
+bool isStartBarricadeOpen() {
+	int all = 0;
+	bool state[HEIGHT + 5] = {0, };
+	for(j=0; j<HEIGHT; j++) {
+		int cnt = 0, now = -1, stackCnt = 10;
+		for(i=0; i<WIDTH; i++) {
+			int type = -1;
+			Color c = getColor(j, i);
+			if(c == YELLOW) {
+				if(now == 0) type = now, stackCnt++;
+				else if(stackCnt > 7) type = 0, stackCnt = 1;
+			}
+			if(c == BLACK) {
+				if(now == 1) type = now, stackCnt++;
+				else if(stackCnt > 7) type = 1, stackCnt = 1;
+			}
+			if(type != -1 && now != type) now = type, cnt++;
+		}
+		if(cnt > 5) all++, state[j] = TRUE;
+		if(j >= 10 && state[j-10]) all--;
+		if(all >= 7) return FALSE;
+	}
+	return TRUE;
+}
+
+const double PI = atan(1) * 4;
+double getBlackLineSlope() {
+	double xbar = (WIDTH-1) / 2., ybar = 0;
+	int Sxx = 0, Sxy = 0, xl = WIDTH / 4, xr = WIDTH * 3 / 4;
+	for(i=xl; i<xr; i++) Sxx += (i - xbar) * (i - xbar);
+	for(i=xl; i<xr; i++) {
+		int firstJ = 0;
+		for(j=HEIGHT-1; j>=0; j--) {
+			Color c = getColor(j, i);
+			if(c == BLACK) { firstJ = j; break; }
+		}
+		Sxy += (i - xbar) * firstJ; ybar += firstJ;
+
+		//bottom BLACK -> coloring PINK!
+		for(j=max(firstJ-4, 0); j<=min(firstJ+4, HEIGHT-1); j++) setBufColor(j, i, NONE);
+	}
+	ybar /= (xr-xl);
+
+	double beta = (double)Sxy / Sxx, alpha = ybar - beta * xbar;
+	//printf("%.2f %.2f\n", alpha, beta);
+	//printf("%.2f\n", atan(beta) / PI * 180);
+	return atan(beta) / PI * 180;
+}
+
+bool isEndBarricadeOpen() {
+	int cntBYB = 0;
+	for(i=0; i<WIDTH; i++) {
+		int cnt = 0, now = 1, stackCnt = 0;
+		for(j=0; j<HEIGHT; j++) {
+			int type = -1;
+			Color c = getColor(j, i);
+			if(c == YELLOW) {
+				if(now == 0) type = now, stackCnt++;
+				else if(stackCnt > 3) type = 0, stackCnt = 1;
+			}
+			if(c == BLACK) {
+				if(now == 1) type = now, stackCnt++;
+				else if(stackCnt > 3) type = 1, stackCnt = 1;
+			}
+			if(type != -1 && now != type) now = type, cnt++;
+		}
+		if(cnt >= 2) {
+			cntBYB++;
+			if(cntBYB >= 100) return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+
+int MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
+	buf = _buf;
+	labelData = _labelData;
+
+	printf("StartBarricade is %s\n", isStartBarricadeOpen()?"Open":"Close");
+	printf("LineSlope is %.0f\n", getBlackLineSlope());
+	printf("EndBarricade is %s\n", isEndBarricadeOpen()?"Open":"Close");
+
+	return 0;
+}
+
