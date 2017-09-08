@@ -15,82 +15,35 @@
 
 void DelayLoop(int delay_time)
 {
+	//AMAZON-II = 166MHz
+	// ms 단위로 카운트 하도록 제작
+	delay_time += 300; // 모션 간 추가 딜레이 (모션 씹힘방지)
+	delay_time *= 1660;
+
 	while(delay_time)
 		delay_time--;
 }
-void init_robot()
-{
-	unsigned char Init_Buffer[10] = {0,};
-	printf("init\n");
-	Init_Buffer[0] = 0xff;
-	Init_Buffer[1] = 0xff;
-	Init_Buffer[2] = 0x0a;
-	Init_Buffer[3] = 0xfe;
-	Init_Buffer[4] = 0x03;
-	Init_Buffer[5] = 0xa2;
-	Init_Buffer[6] = 0x5c;
-	Init_Buffer[7] = 0x34;
-	Init_Buffer[8] = 0x01;
-	Init_Buffer[9] = 0x60;
-	uart1_buffer_write(Init_Buffer, 10);
-}
-void Send_Command(unsigned char CS1, unsigned char CS2, unsigned char DATA0)
-{
-	int i;
-	unsigned char Command_Buffer[9] = {0,};
 
-	Command_Buffer[0] = 0xff;
-	Command_Buffer[1] = 0xff;
-	Command_Buffer[2] = 0x09;
-	Command_Buffer[3] = 0xfd;
-	Command_Buffer[4] = 0x16;
-	Command_Buffer[5] = CS1;
-	Command_Buffer[6] = CS2;
-	Command_Buffer[7] = DATA0;
-	Command_Buffer[8] = 0x00;
-	printf("send_command\n");
-	uart1_buffer_write(Command_Buffer, 9);
+void Send_Command(unsigned char Ldata, unsigned char Ldata1)
+{
+	unsigned char Command_Buffer[6] = {0,};
+
+	Command_Buffer[0] = START_CODE;	// Start Byte -> 0xff
+	Command_Buffer[1] = START_CODE1; // Start Byte1 -> 0x55
+        Command_Buffer[2] = Ldata;
+	Command_Buffer[3] = Ldata1;
+	Command_Buffer[4] = Hdata;  // 0x00
+	Command_Buffer[5] = Hdata1; // 0xff
+
+	uart1_buffer_write(Command_Buffer, 6);
 }
 
-#define ERROR 0
+#define ERROR	0
 #define OK	1
-
-/* Command Function */
-
-void Motion(unsigned char DATA0)
+void test_motion()
 {
-	unsigned char CS1;
-	unsigned char CS2;
-	printf("Motion\n");
-	CS1 = (Packet^pID^CMD^DATA0^DATA1) & 0xfe;
-	CS2 = (~(Packet^pID^CMD^DATA0^DATA1)) & 0xfe;
-	Send_Command(CS1, CS2, DATA0);
-	//printf("CS1=%x\n", CS1);
-	//printf("CS2=%x\n", CS2);
-	//DelayLoop(15000000);		// 3second delay
-}
-
-void F_walk()
-{
-	Motion(0x00);
-}
-
-void B_walk()
-{
-	Motion(0x01);
-}
-
-void Turn_left()
-{
-	Motion(0x02);
-}
-
-void Turn_right()
-{
-	Motion(0x03);
-}
-
-void box()
-{
-	Motion(0x0f);
+	printf("\nmotion started\n");
+	Send_Command(0x01, 0xfe);
+	DelayLoop(504); // 504ms
+	printf("motion end\n");
 }
