@@ -20,7 +20,7 @@
 #define CMD	0x16
 #define DATA1	0x00
 ///////////////////////////////////////////////////////////////////////////////
-void DelayLoop(int delay_time);
+void DelayLoop(double delay_time);
 void Send_Command(unsigned char CS1, unsigned char CS2, unsigned char DATA0);
 unsigned char Receive_Ack(void);
 void Motion(unsigned char DATA0);
