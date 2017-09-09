@@ -1,12 +1,3 @@
-/************************************************************************
-  Title     : Robot Body Protocol Source File
-  File name : robot_protocol.c
-
-  Author    : adc inc. (oxyang@adc.co.kr)
-  History
-		+ v0.0  2007/2/14
-		+ v1.0  2008/8/6
-************************************************************************/
 #include <stdio.h>
 #include <string.h>
 #include "robot_protocol.h"
@@ -40,10 +31,26 @@ void Send_Command(unsigned char Ldata, unsigned char Ldata1)
 
 #define ERROR	0
 #define OK	1
-void test_motion()
+void motion1()
 {
 	printf("\nmotion started\n");
 	Send_Command(0x01, 0xfe);
-	DelayLoop(504); // 504ms
+	DelayLoop(5000); // 5000ms
+	printf("motion end\n");
+}
+
+void motion2()
+{
+	printf("\nmotion started\n");
+	Send_Command(0x02, 0xfd);
+	DelayLoop(5000); // 5000ms
+	printf("motion end\n");
+}
+
+void motion3()
+{
+	printf("\nmotion started\n");
+	Send_Command(0x03, 0xfc);
+	DelayLoop(5000); // 5000ms
 	printf("motion end\n");
 }

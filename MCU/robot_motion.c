@@ -7,45 +7,40 @@
 #include "robot_motion.h"
 #include "robot_protocol.h"
 #include "uart_api.h"
-#include "img_analysis.h"
+#include <termios.h>
+static struct termios inittio, newtio;
+void init_console(void)
+{
+    tcgetattr(0, &inittio);
+    newtio = inittio;
+    newtio.c_lflag &= ~ICANON;
+    newtio.c_lflag &= ~ECHO;
+    newtio.c_lflag &= ~ISIG;
+    newtio.c_cc[VMIN] = 1;
+    newtio.c_cc[VTIME] = 0;
 
+    cfsetispeed(&newtio, B115200);
+
+    tcsetattr(0, TCSANOW, &newtio);
+}
 void Order_to_Robot(int motion_number)
 {
-  switch(motion_number)
-  {
-     case F_WALK:
-      Motion(F_WALK);
-      DelayLoop(4500000);
-     break;
-     case F_WALK_5:
-      Motion(F_WALK_5);
-      DelayLoop(16000000);
-    break;
-    case F_WALK_20:
-      Motion(F_WALK_20);
-      DelayLoop(55000000);
-    break;
-    case STAIR_LOL:
-      Motion(STAIR_LOL);
-      DelayLoop(165000000);
-    break;
-    case L_TURN:
-      Motion(L_TURN);
-      DelayLoop(10000000);
-    break;
-    case R_TURN:
-      Motion(R_TURN);
-      DelayLoop(10000000);
-    break;
-    case L_WALK:
-      Motion(L_WALK);
-      DelayLoop(2500000);
-    break;
-    case R_WALK:
-      Motion(R_WALK);
-      DelayLoop(2500000);
-    break;
-  }
+  int ret;
 
+   init_console();
+
+   ret = uart_open();
+   if (ret < 0) return EXIT_FAILURE;
+
+   uart_config(UART1, 57600, 8, UART_PARNONE, 1);
+
+   switch(motion_number)
+   {
+     case 1: motion1(); break;
+     case 2: motion2(); break;
+     case 3: motion3(); break;
+   }
+
+   	uart_close();
   return;
 }
