@@ -115,6 +115,14 @@ set_location_assignment PIN_AA11 -to vref
 set_location_assignment PIN_AA10 -to AMAmem_csx
 set_global_assignment -name ENABLE_SIGNALTAP ON
 set_global_assignment -name USE_SIGNALTAP_FILE output_files/stp1.stp
+set_global_assignment -name VERILOG_FILE linear_transfomation_func.v
+set_global_assignment -name VERILOG_FILE linear_transfomation.v
+set_global_assignment -name VERILOG_FILE gen_deltas_list.v
+set_global_assignment -name VERILOG_FILE gen_delta.v
+set_global_assignment -name VERILOG_FILE root1D3.v
+set_global_assignment -name VERILOG_FILE rgb_to_lab_verb.v
+set_global_assignment -name VERILOG_FILE RGB_XYZ_verb.v
+set_global_assignment -name VERILOG_FILE matrix_multiper_verb.v
 set_global_assignment -name CDF_FILE output_files/SoC_Brain.cdf
 set_global_assignment -name SIGNALTAP_FILE stp1.stp
 set_global_assignment -name VERILOG_FILE RAM.v
