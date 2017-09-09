@@ -19,20 +19,6 @@ static struct termios inittio, newtio;
 
 const int START__ = 0;
 
-void init_console(void)
-{
-    tcgetattr(0, &inittio);
-    newtio = inittio;
-    newtio.c_lflag &= ~ICANON;
-    newtio.c_lflag &= ~ECHO;
-    newtio.c_lflag &= ~ISIG;
-    newtio.c_cc[VMIN] = 1;
-    newtio.c_cc[VTIME] = 0;
-
-    cfsetispeed(&newtio, B115200);
-
-    tcsetattr(0, TCSANOW, &newtio);
-}
 
 int main(int argc, char **argv)
 {
@@ -50,22 +36,8 @@ int main(int argc, char **argv)
 	U16* fpga_videodata = (U16*)malloc(180 * 120 * 2);
 	char* labelData = (char*)malloc(180 * 120);
 
-	int ret;
-
-init_console();
-
-ret = uart_open();
-if (ret < 0) return EXIT_FAILURE;
-
-uart_config(UART1, 115200, 8, UART_PARNONE, 1);
 
 	direct_camera_display_off();
-	init_robot();
-
-	printf("go\n");
-
-	//DelayLoop(5000000);	// 1second delay
-	//Order_to_Robot(F_WALK); // 걷기
 
 	while (1)
 	{
