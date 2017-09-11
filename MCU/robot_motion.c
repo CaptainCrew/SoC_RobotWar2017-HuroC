@@ -19,7 +19,8 @@ const int CAMERA_RIGHT = 13;
 
 void Order_to_Robot(int motion_number)
 {
-  Motion(motion_number);
+ /* Motion(motion_number); */ // DH : 이제 이런식으로 호출못함
+    motion1(); // DH : robot_protocol.c에 만들어놓은 함수명으로 호출해야함
   printf("give motion_number %d\n", motion_number);
   double delaySecond = 0;
   if(motion_number == BASE) delaySecond = 10;
