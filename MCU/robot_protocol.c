@@ -31,6 +31,15 @@ void Send_Command(unsigned char Ldata, unsigned char Ldata1)
 
 #define ERROR	0
 #define OK	1
+
+
+void Motion(int number) {
+	printf("[%d] motion started\n", number);
+	Send_Command(number, 0xff - number);
+	DelayLoop(5000);
+	printf("[%d] motion end\n", number);
+}
+
 void motion1()
 {
 	printf("\nmotion started\n");
