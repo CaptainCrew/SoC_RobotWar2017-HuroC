@@ -18,13 +18,34 @@ void Order_to_Robot(int motion_number);
 #define TURN_RIGHT_LARGE (12)
 #define CAMERA_0 (13)
 #define CAMERA_45 (14)
-#define CAMERA_60 (15)
+#define CAMERA_55 (15)
 #define CAMERA_RIGHT (16)
 #define CAMERA_RIGHT_END (17)
-#define GO_UP (18)
-#define GO_DOWN (19)
-
-
+#define KICK (18)
+#define GO_UP (19)
+#define GO_DOWN (20)
+#define GO_UP_4CM (21)
+#define STAND_UP (22)
+/*
+1. base
+2. walk1
+3. walk5
+4. walk10
+5. left_small
+6. left_large
+7.right_small
+8. right_large
+9. tleft_small
+10. tleft_large
+11. tright_small
+12. tright_large
+13. cfront0
+14. cfront45
+15. cfront55
+16. cright_s
+17. cright_e
+18. kick
+*/
 /*
 #define F_WALK 0
 #define F_WALK_5 1

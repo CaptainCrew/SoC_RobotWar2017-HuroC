@@ -217,20 +217,29 @@ int getColorDistanceUp(Color color) {
 }
 
 bool isEndBarricadeOpen() {
-	return isVerticalZebra(YELLOW, BLACK, 3, 3, WIDTH, (double)100 / WIDTH);
+	return isVerticalZebra(BLACK, YELLOW, 3, 3, WIDTH, (double)100 / WIDTH);
 }
 
 
 //it is start
 #define WAIT_START_BARRICADE (0)
-#define SEE_FRONT_IN_START (8)
-#define OPEN_START_BARRICADE (1)
-#define LETS_FIND_RED_BLOCK (2)
-#define FOUND_RED_BLOCK (3)
-#define BEFORE_RED_BLOCK_UP (4)
-#define WALK_ON_RED_BLOCK (5)
-#define BEFORE_RED_BLOCK_DOWN (6)
-#define BEFORE_BOMB (7)
+#define SEE_FRONT_IN_START (1)
+#define OPEN_START_BARRICADE (2)
+#define LETS_FIND_RED_BLOCK (3)
+#define FOUND_RED_BLOCK (4)
+#define BEFORE_RED_BLOCK_UP (5)
+#define WALK_ON_RED_BLOCK (6)
+#define BEFORE_RED_BLOCK_DOWN (7)
+#define BEFORE_BOMB (8)
+#define BEFORE_BEFORE_BLUE (9)
+#define BEFORE_BLUE (10)
+#define AFTER_BLUE (11)
+#define LETS_TURN_LEFT (12)
+#define LETS_FIND_GREEN_BLOCK (13)
+#define FOUND_GREEN_BLOCK (14)
+#define BEFORE_GREEN_BLOCK_UP (15)
+#define WALK_ON_GREEN_BLOCK (16)
+#define BEFORE_GREEN_BLOCK_DOWN (17)
 
 int nowState = -1, nextState = -1;
 
@@ -245,7 +254,6 @@ void chkDirectionFuction() {
         case LETS_MAKE_CAMERA_RIGHT:
             Order_to_Robot(CAMERA_RIGHT);
             chkFrontDirection = MAKE_LINE_DEGREE_ZERO;
-            DelayLoop(3000);
             break;
         case MAKE_LINE_DEGREE_ZERO:
             degree = getColorLineSlopeDown(chkColor);
@@ -253,9 +261,9 @@ void chkDirectionFuction() {
             Order_to_Robot(CAMERA_RIGHT_END);
 
             chkFrontDirection = LETS_MAKE_CAMERA_RIGHT;
-            if(abs(degree) < 3) chkFrontDirection = NO_INFOMATION, motionNumber = BASE;
-            else if(abs(degree) > 15) motionNumber = (degree < 0 ? LEFT_LARGE : RIGHT_LARGE);
-            else motionNumber = (degree < 0 ? LEFT_SMALL : RIGHT_SMALL);
+            if(abs(degree) < 6) chkFrontDirection = NO_INFOMATION, motionNumber = BASE;
+            else if(abs(degree) > 18) motionNumber = (degree < 0 ? TURN_LEFT_LARGE : TURN_RIGHT_LARGE);
+            else motionNumber = (degree < 0 ? TURN_LEFT_SMALL : TURN_RIGHT_SMALL);
             Order_to_Robot(motionNumber);
             break;
         default:
@@ -264,6 +272,22 @@ void chkDirectionFuction() {
 }
 
 int cnt = 0;
+
+int bombCnt = 0;
+void BOMB_Function() {
+    bombCnt++;
+    if(bombCnt % 5 == 0) {
+        chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = BLACK;
+        return;
+    }
+
+    //left
+    //Order_to_Robot(LEFT_LARGE);
+    
+    //right
+    //Order_to_Robot(RIGHT_LARGE);
+    nextState = BEFORE_BOMB;
+}
 void realFunction(int *state) {
     if(cnt == 1) {
         DelayLoop(15000);
@@ -279,33 +303,37 @@ void realFunction(int *state) {
     }
 
     int iter;
-
     switch(nowState) {
         case WAIT_START_BARRICADE:
             Order_to_Robot(CAMERA_0);
             nextState = SEE_FRONT_IN_START;
-            DelayLoop(500);            
+            DelayLoop(1500);            
             break;
         case SEE_FRONT_IN_START:
             printf("isStartOpen : %d\n", (int)isStartBarricadeOpen());
             nextState = isStartBarricadeOpen() ? OPEN_START_BARRICADE : WAIT_START_BARRICADE;
-            DelayLoop(500);            
+            DelayLoop(500);
+            break;
         case OPEN_START_BARRICADE:
             DelayLoop(1500);
-            for(iter=0; iter<5; iter++) Order_to_Robot(WALK);
+            Order_to_Robot(WALK_5);
 
             chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = BLACK;
             nextState = LETS_FIND_RED_BLOCK;
             break;
         case LETS_FIND_RED_BLOCK:
-            for(iter=0; iter<3; iter++) Order_to_Robot(WALK);
-            nextState = (getPercentColor(RED) >= 30 ? FOUND_RED_BLOCK : LETS_FIND_RED_BLOCK);
+            Order_to_Robot(WALK_5);
+            nextState = (getPercentColor(RED) >= 10 ? FOUND_RED_BLOCK : LETS_FIND_RED_BLOCK);
             break;
         case FOUND_RED_BLOCK:
-            for(iter=0; iter<5; iter++) Order_to_Robot(WALK);
+            Order_to_Robot(WALK_5);
             nextState = BEFORE_RED_BLOCK_UP;
             break;
         case BEFORE_RED_BLOCK_UP:
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
             Order_to_Robot(GO_UP);
 
             chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = RED;
@@ -318,13 +346,68 @@ void realFunction(int *state) {
             nextState = (getPercentColor(RED) > 10 ? WALK_ON_RED_BLOCK : BEFORE_RED_BLOCK_DOWN);
             break;
         case BEFORE_RED_BLOCK_DOWN:
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
+//            Order_to_Robot(GO_DOWN);
+            nextState = BEFORE_BOMB;
+            break;
+
+        case BEFORE_BOMB:
+            for(iter=0; iter<2; iter++) Order_to_Robot(WALK);
+            BOMB_Function();
+
+            if(isVerticalZebra(BLUE, WHITE, 3, 3, WIDTH, (double)50 / WIDTH))
+                nextState = BEFORE_BEFORE_BLUE;
+            break;
+
+        case BEFORE_BEFORE_BLUE:
+            Order_to_Robot(WALK_5);
+            nextState = BEFORE_BLUE;
+            break;
+        case BEFORE_BLUE:
+            Order_to_Robot(GO_UP_4CM);
+            nextState = AFTER_BLUE;
+            break;
+        case AFTER_BLUE:
+            Order_to_Robot(STAND_UP);
+            nextState = LETS_TURN_LEFT;
+            break;
+        case LETS_TURN_LEFT:
+            for(iter=0; iter<3; iter++) Order_to_Robot(TURN_LEFT_LARGE);
+
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = BLACK;
+            nextState = LETS_FIND_GREEN_BLOCK;
+            break;
+        case LETS_FIND_GREEN_BLOCK:
+            for(iter=0; iter<3; iter++) Order_to_Robot(WALK);
+            nextState = (getPercentColor(GREEN) >= 30 ? FOUND_GREEN_BLOCK : LETS_FIND_GREEN_BLOCK);
+            break;
+        case FOUND_GREEN_BLOCK:
+            for(iter=0; iter<5; iter++) Order_to_Robot(WALK);
+            nextState = BEFORE_GREEN_BLOCK_UP;
+            break;
+        case BEFORE_GREEN_BLOCK_UP:
+            Order_to_Robot(GO_UP);
+
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = GREEN;
+            nextState = WALK_ON_GREEN_BLOCK;
+            break;
+        case WALK_ON_GREEN_BLOCK:
+            for(iter=0; iter<2; iter++) Order_to_Robot(WALK);
+
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = GREEN;
+            nextState = (getPercentColor(GREEN) > 10 ? WALK_ON_RED_BLOCK : BEFORE_RED_BLOCK_DOWN);
+            break;
+        case BEFORE_GREEN_BLOCK_DOWN:
+            for(iter=0; iter<3; iter++) Order_to_Robot(WALK);
             Order_to_Robot(GO_DOWN);
             nextState = BEFORE_BOMB;
             break;
-        case BEFORE_BOMB:
-            for(iter=0; iter<2; iter++) Order_to_Robot(WALK);
 
-            nextState = BEFORE_BOMB;
+
+
         default:
             break;
     }
@@ -348,23 +431,25 @@ void MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
         DelayLoop(1000);
     }
 
-    return watchColor();
+    //return watchColor();
     //return onlyChkLine();
     //return printValues();
     //return motionTest();
-    //return realFunction(state);
+    return realFunction(state);
 }
 
 
 void watchColor() {
     if(cnt == 1) {
-        Order_to_Robot(CAMERA_RIGHT);
+        Order_to_Robot(CAMERA_0);
+//        Order_to_Robot(CAMERA_RIGHT);
         DelayLoop(1000);
     }
     return;
 }
 void onlyChkLine() {
     if(cnt == 1) {
+        DelayLoop(15000);
         chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = BLACK;        
         DelayLoop(2000);
     }
@@ -372,13 +457,14 @@ void onlyChkLine() {
 }
 void printValues() {
     printf("[cnt %d] %f\n", cnt, cos(60. / 180. * PI));
-    Order_to_Robot(CAMERA_RIGHT);
+//    Order_to_Robot(CAMERA_RIGHT);
+    Order_to_Robot(CAMERA_0);
     DelayLoop(2000);
-    printf("DistanceUp : %d\n", getColorDistanceUp(BLACK));
-    printf("DistanceDown : %d\n", getColorDistanceDown(BLACK));
-//    printf("StartBarricade is %s\n", isStartBarricadeOpen()?"Open":"Close");
-//    printf("LineSlope is %.0f\n", getColorLineSlopeDown(BLACK));
-//    printf("EndBarricade is %s\n", isEndBarricadeOpen()?"Open":"Close");
+//    printf("DistanceUp : %d\n", getColorDistanceUp(BLACK));
+//    printf("DistanceDown : %d\n", getColorDistanceDown(BLACK));
+    printf("StartBarricade is %s\n", isStartBarricadeOpen()?"Open":"Close");
+    printf("LineSlope is %.0f\n", getColorLineSlopeDown(BLACK));
+    printf("EndBarricade is %s\n", isEndBarricadeOpen()?"Open":"Close");
 }
 void motionTest() {
     if(cnt == 1) {

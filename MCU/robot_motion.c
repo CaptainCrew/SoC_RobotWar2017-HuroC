@@ -21,7 +21,7 @@
 #define TURN_RIGHT_SMALL (9)
 #define TURN_RIGHT_LARGE (10)
 #define CAMERA_45 (11)
-#define CAMERA_60 (12)
+#define CAMERA_55 (12)
 #define CAMERA_RIGHT (13)
 #define GO_UP (14)
 #define GO_DOWN (15)
@@ -42,7 +42,7 @@ void Order_to_Robot(int motion_number)
         case TURN_RIGHT_SMALL: puts("TURN_RIGHT_SMALL"); break;
         case TURN_RIGHT_LARGE: puts("TURN_RIGHT_LARGE"); break;
         case CAMERA_45: puts("CAMERA_45"); break;
-        case CAMERA_60: puts("CAMERA_60"); break;
+        case CAMERA_55: puts("CAMERA_55"); break;
         case CAMERA_RIGHT: puts("CAMERA_RIGHT"); break;
         case GO_UP: puts("GO_UP"); break;
         case GO_DOWN: puts("GO_DOWN"); break;
@@ -58,33 +58,33 @@ void Order_to_Robot(int motion_number)
         case WALK: 
             delayMilliSecond = 1000; break;
         case WALK_5: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 3000; break;
         case WALK_10: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 5000; break;
         case LEFT_SMALL: 
             delayMilliSecond = 1000; break;
         case LEFT_LARGE: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 1500; break;
         case RIGHT_SMALL: 
             delayMilliSecond = 1000; break;
         case RIGHT_LARGE: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 1500; break;
         case TURN_LEFT_SMALL: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 2500; break;
         case TURN_LEFT_LARGE: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 2500; break;
         case TURN_RIGHT_SMALL: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 2500; break;
         case TURN_RIGHT_LARGE: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 2500; break;
         case CAMERA_45: 
             delayMilliSecond = 1000; break;
-        case CAMERA_60: 
+        case CAMERA_55: 
             delayMilliSecond = 1000; break;
         case CAMERA_RIGHT: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 4000; break;
         case CAMERA_RIGHT_END: 
-            delayMilliSecond = 1000; break;
+            delayMilliSecond = 4000; break;
         case GO_UP: 
             delayMilliSecond = 1000; break;
         case GO_DOWN: 
@@ -92,6 +92,30 @@ void Order_to_Robot(int motion_number)
         default:
             delayMilliSecond = 1000; break;
     }
+    /*
+#define BASE (1)
+#define WALK (2)
+#define WALK_5 (3)
+#define WALK_10 (4)
+#define LEFT_SMALL (5)
+#define LEFT_LARGE (6)
+#define RIGHT_SMALL (7)
+#define RIGHT_LARGE (8)
+#define TURN_LEFT_SMALL (9)
+#define TURN_LEFT_LARGE (10)
+#define TURN_RIGHT_SMALL (11)
+#define TURN_RIGHT_LARGE (12)
+#define CAMERA_0 (13)
+#define CAMERA_45 (14)
+#define CAMERA_55 (15)
+#define CAMERA_RIGHT (16)
+#define CAMERA_RIGHT_END (17)
+#define KICK (18)
+#define GO_UP (19)
+#define GO_DOWN (20)
+#define GO_UP_4CM (21)
+#define STAND_UP (22)
+    */
 
 
     DelayLoop(delayMilliSecond);
