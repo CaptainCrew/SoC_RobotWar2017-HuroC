@@ -20,8 +20,9 @@ void Order_to_Robot(int motion_number);
 #define CAMERA_45 (14)
 #define CAMERA_60 (15)
 #define CAMERA_RIGHT (16)
-#define GO_UP (17)
-#define GO_DOWN (18)
+#define CAMERA_RIGHT_END (17)
+#define GO_UP (18)
+#define GO_DOWN (19)
 
 
 /*

@@ -57,6 +57,10 @@ void Order_to_Robot(int motion_number)
             delayMilliSecond = 1000; break;
         case WALK: 
             delayMilliSecond = 1000; break;
+        case WALK_5: 
+            delayMilliSecond = 1000; break;
+        case WALK_10: 
+            delayMilliSecond = 1000; break;
         case LEFT_SMALL: 
             delayMilliSecond = 1000; break;
         case LEFT_LARGE: 
@@ -78,6 +82,8 @@ void Order_to_Robot(int motion_number)
         case CAMERA_60: 
             delayMilliSecond = 1000; break;
         case CAMERA_RIGHT: 
+            delayMilliSecond = 1000; break;
+        case CAMERA_RIGHT_END: 
             delayMilliSecond = 1000; break;
         case GO_UP: 
             delayMilliSecond = 1000; break;

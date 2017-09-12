@@ -147,16 +147,24 @@ bool isStartBarricadeOpen() {
 }
 
 const double PI = atan(1) * 4;
-double getColorLineSlope(Color color) {
+
+double getColorLineSlopeUpOrDown(Color color, int isUp) {
     int i, j, k, l;
     double xbar = (WIDTH-1) / 2., ybar = 0;
     int Sxx = 0, Sxy = 0, xl = WIDTH / 4, xr = WIDTH * 3 / 4;
     for(i=xl; i<xr; i++) Sxx += (i - xbar) * (i - xbar);
     for(i=xl; i<xr; i++) {
         int firstJ = 0;
-        for(j=HEIGHT-1; j>=0; j--) {
-            Color c = getColor(j, i);
-            if(c == color) { firstJ = j; break; }
+        if(isUp) {
+            for(j=0; j<HEIGHT; j++) {
+                Color c = getColor(j, i);
+                if(c == color) { firstJ = j; break; }
+            }
+        }else{
+            for(j=HEIGHT-1; j>=0; j--) {
+                Color c = getColor(j, i);
+                if(c == color) { firstJ = j; break; }
+            }
         }
         Sxy += (i - xbar) * firstJ; ybar += firstJ;
 
@@ -169,6 +177,43 @@ double getColorLineSlope(Color color) {
     //printf("%.2f %.2f\n", alpha, beta);
     //printf("%.2f\n", atan(beta) / PI * 180);
     return atan(beta) / PI * 180;
+}
+
+double getColorLineSlopeDown(Color color) {
+    return getColorLineSlopeUpOrDown(color, 0);
+}
+
+double getColorLineSlopeUp(Color color) {
+    return getColorLineSlopeUpOrDown(color, 1);
+}
+int getColorDistanceUpOrDown(Color color, int isUp) {
+    int i, j, k, l;
+    int xl = WIDTH / 4, xr = WIDTH * 3 / 4, sumHeight = 0;
+    for(i=xl; i<xr; i++) {
+        int firstJ = 0;
+        if(isUp) {
+            for(j=0; j<HEIGHT; j++) {
+                Color c = getColor(j, i);
+                if(c == color) { firstJ = j; break; }
+            }
+        }else{
+            for(j=HEIGHT-1; j>=0; j--) {
+                Color c = getColor(j, i);
+                if(c == color) { firstJ = j; break; }
+            }
+        }
+        sumHeight += firstJ;
+    }
+    int averageHeight = HEIGHT-1 - sumHeight / (xr - xl);
+    double somethingMul = 1.25;
+    double baseCM = 7.5;
+    return somethingMul * cos(70. / 180 * PI) * (averageHeight + baseCM);
+}
+int getColorDistanceDown(Color color) {
+    return getColorDistanceUpOrDown(color, 0);
+}
+int getColorDistanceUp(Color color) {
+    return getColorDistanceUpOrDown(color, 1);
 }
 
 bool isEndBarricadeOpen() {
@@ -187,7 +232,6 @@ bool isEndBarricadeOpen() {
 #define BEFORE_RED_BLOCK_DOWN (6)
 #define BEFORE_BOMB (7)
 
-int cnt = 0, memoState;
 int nowState = -1, nextState = -1;
 
 #define LETS_MAKE_CAMERA_RIGHT (2)
@@ -201,11 +245,14 @@ void chkDirectionFuction() {
         case LETS_MAKE_CAMERA_RIGHT:
             Order_to_Robot(CAMERA_RIGHT);
             chkFrontDirection = MAKE_LINE_DEGREE_ZERO;
+            DelayLoop(3000);
             break;
         case MAKE_LINE_DEGREE_ZERO:
-            degree = getColorLineSlope(chkColor);
-            printf("noe degree : %d\n", degree);
+            degree = getColorLineSlopeDown(chkColor);
+            printf("degree : %d\n", degree);
+            Order_to_Robot(CAMERA_RIGHT_END);
 
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT;
             if(abs(degree) < 3) chkFrontDirection = NO_INFOMATION, motionNumber = BASE;
             else if(abs(degree) > 15) motionNumber = (degree < 0 ? LEFT_LARGE : RIGHT_LARGE);
             else motionNumber = (degree < 0 ? LEFT_SMALL : RIGHT_SMALL);
@@ -215,10 +262,14 @@ void chkDirectionFuction() {
             break;
     }
 }
-void MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
-    buf = _buf; labelData = _labelData;
 
+int cnt = 0;
+void realFunction(int *state) {
+    if(cnt == 1) {
+        DelayLoop(15000);
+    }
     nowState = *state, nextState = -1;
+
     printf("nowState : %d | chkFrontDirection : %d\n", nowState, chkFrontDirection);
 
     bool haveInformation = (chkFrontDirection != NO_INFOMATION);
@@ -283,18 +334,56 @@ void MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
     }
 
     *state = nextState;
+}
+void watchColor();
+void onlyChkLine();
+void printValues();
+void motionTest();
 
-/*
-	printf("[cnt %d]\n", ++cnt);
-
-    if(cnt >= 21 && cnt <= 33) {
-        Order_to_Robot(cnt - 20);
-    }else{
-        printf("StartBarricade is %s\n", isStartBarricadeOpen()?"Open":"Close");
-        printf("LineSlope is %.0f\n", getColorLineSlope(BLACK));
-        printf("EndBarricade is %s\n", isEndBarricadeOpen()?"Open":"Close");
+void MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
+    buf = _buf; labelData = _labelData;
+    cnt++;
+    if(cnt == 1) {
+        Order_to_Robot(BASE);
+        DelayLoop(1000);
     }
-*/
-    return;
+
+    return watchColor();
+    //return onlyChkLine();
+    //return printValues();
+    //return motionTest();
+    //return realFunction(state);
 }
 
+
+void watchColor() {
+    if(cnt == 1) {
+        Order_to_Robot(CAMERA_RIGHT);
+        DelayLoop(1000);
+    }
+    return;
+}
+void onlyChkLine() {
+    if(cnt == 1) {
+        chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = BLACK;        
+        DelayLoop(2000);
+    }
+    chkDirectionFuction();    
+}
+void printValues() {
+    printf("[cnt %d] %f\n", cnt, cos(60. / 180. * PI));
+    Order_to_Robot(CAMERA_RIGHT);
+    DelayLoop(2000);
+    printf("DistanceUp : %d\n", getColorDistanceUp(BLACK));
+    printf("DistanceDown : %d\n", getColorDistanceDown(BLACK));
+//    printf("StartBarricade is %s\n", isStartBarricadeOpen()?"Open":"Close");
+//    printf("LineSlope is %.0f\n", getColorLineSlopeDown(BLACK));
+//    printf("EndBarricade is %s\n", isEndBarricadeOpen()?"Open":"Close");
+}
+void motionTest() {
+    if(cnt == 1) {
+        DelayLoop(15000);
+    }
+    Order_to_Robot(cnt);
+    DelayLoop(3000);
+}
