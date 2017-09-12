@@ -59,6 +59,7 @@ int main(int argc, char **argv)
     if(ret < 0) return EXIT_FAILURE;
     uart_config(UART1, 57600, 8, UART_PARNONE, 1);
 
+DelayLoop(15000);
 	while (1)
 	{
 //		clear_screen();
@@ -67,7 +68,7 @@ int main(int argc, char **argv)
 		read_fpga_video_data(fpga_videodata); //fpga로부터 처리된 영상데이터를 fpga_videodata에 받아옴
 
 		MCU_process(fpga_videodata, allColorLabelData, labelData); // MCU를 이용한 영상처리
-		motion = MCU_analysis(fpga_videodata, labelData, &state); // 영상에대한 분석작업
+	  MCU_analysis(fpga_videodata, labelData, &state); // 영상에대한 분석작업
   //  printf("state : %d, motiom : %d\n",state, motion);
 
         draw_fpga_video_data_full(fpga_videodata);	//보드에 fpga영상 데이터를 출력

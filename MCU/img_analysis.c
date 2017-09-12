@@ -14,9 +14,6 @@ typedef char Color;
 
 const char RED = 0, GREEN = 1, BLUE = 2, WHITE = 3, BLACK = 4, ORANGE = 5, YELLOW = 6, NONE = 7;
 const int HEIGHT = 120, WIDTH = 180;
-
-const int START = 0;
-
 const int INF = 0x3f2f1f0f;
 
 /*
@@ -64,9 +61,6 @@ const int INF = 0x3f2f1f0f;
 U16 *buf;
 Color *labelData;
 Color getColor(int j, int i) {
-    int k;
-    k = START;
-    // = START;
     return labelData[i+180*j];
 }
 void setBufColor(int j, int i, Color color) {
@@ -82,6 +76,13 @@ bool isStartBarricadeOpen();
 bool isEndBarricadeOpen();
 void lineCheck();
 
+int getPercentColor(Color color) {
+    int i, j, k, l;
+
+    int cnt = 0;
+    for(j=0; j<HEIGHT; j++) for(i=0; i<WIDTH; i++) cnt += (getColor(j, i) == color);
+    return cnt * 100 / (HEIGHT * WIDTH);
+}
 bool isHorizontalZebra(Color colorA, Color colorB, int colorWidth, int zebraLimit, int sumHeight, double percentInHeight) {
     int i, j, k, l;
     int all = 0;
@@ -174,11 +175,116 @@ bool isEndBarricadeOpen() {
 	return isVerticalZebra(YELLOW, BLACK, 3, 3, WIDTH, (double)100 / WIDTH);
 }
 
-int cnt = 0;
-int MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
-    buf = _buf;
-    labelData = _labelData;
 
+//it is start
+#define WAIT_START_BARRICADE (0)
+#define SEE_FRONT_IN_START (8)
+#define OPEN_START_BARRICADE (1)
+#define LETS_FIND_RED_BLOCK (2)
+#define FOUND_RED_BLOCK (3)
+#define BEFORE_RED_BLOCK_UP (4)
+#define WALK_ON_RED_BLOCK (5)
+#define BEFORE_RED_BLOCK_DOWN (6)
+#define BEFORE_BOMB (7)
+
+int cnt = 0, memoState;
+int nowState = -1, nextState = -1;
+
+#define LETS_MAKE_CAMERA_RIGHT (2)
+#define MAKE_LINE_DEGREE_ZERO (1)
+#define NO_INFOMATION (0)
+
+int chkFrontDirection = NO_INFOMATION; Color chkColor;
+void chkDirectionFuction() {
+    int degree, motionNumber = -1;
+    switch(chkFrontDirection) {
+        case LETS_MAKE_CAMERA_RIGHT:
+            Order_to_Robot(CAMERA_RIGHT);
+            chkFrontDirection = MAKE_LINE_DEGREE_ZERO;
+            break;
+        case MAKE_LINE_DEGREE_ZERO:
+            degree = getColorLineSlope(chkColor);
+            printf("noe degree : %d\n", degree);
+
+            if(abs(degree) < 3) chkFrontDirection = NO_INFOMATION, motionNumber = BASE;
+            else if(abs(degree) > 15) motionNumber = (degree < 0 ? LEFT_LARGE : RIGHT_LARGE);
+            else motionNumber = (degree < 0 ? LEFT_SMALL : RIGHT_SMALL);
+            Order_to_Robot(motionNumber);
+            break;
+        default:
+            break;
+    }
+}
+void MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
+    buf = _buf; labelData = _labelData;
+
+    nowState = *state, nextState = -1;
+    printf("nowState : %d | chkFrontDirection : %d\n", nowState, chkFrontDirection);
+
+    bool haveInformation = (chkFrontDirection != NO_INFOMATION);
+    if(haveInformation) {
+        chkDirectionFuction();
+        return nowState;
+    }
+
+    int iter;
+
+    switch(nowState) {
+        case WAIT_START_BARRICADE:
+            Order_to_Robot(CAMERA_0);
+            nextState = SEE_FRONT_IN_START;
+            DelayLoop(500);            
+            break;
+        case SEE_FRONT_IN_START:
+            printf("isStartOpen : %d\n", (int)isStartBarricadeOpen());
+            nextState = isStartBarricadeOpen() ? OPEN_START_BARRICADE : WAIT_START_BARRICADE;
+            DelayLoop(500);            
+        case OPEN_START_BARRICADE:
+            DelayLoop(1500);
+            for(iter=0; iter<5; iter++) Order_to_Robot(WALK);
+
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = BLACK;
+            nextState = LETS_FIND_RED_BLOCK;
+            break;
+        case LETS_FIND_RED_BLOCK:
+            for(iter=0; iter<3; iter++) Order_to_Robot(WALK);
+            nextState = (getPercentColor(RED) >= 30 ? FOUND_RED_BLOCK : LETS_FIND_RED_BLOCK);
+            break;
+        case FOUND_RED_BLOCK:
+            for(iter=0; iter<5; iter++) Order_to_Robot(WALK);
+            nextState = BEFORE_RED_BLOCK_UP;
+            break;
+        case BEFORE_RED_BLOCK_UP:
+            Order_to_Robot(GO_UP);
+
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = RED;
+            nextState = WALK_ON_RED_BLOCK;
+            break;
+        case WALK_ON_RED_BLOCK:
+            for(iter=0; iter<2; iter++) Order_to_Robot(WALK);
+
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = RED;
+            nextState = (getPercentColor(RED) > 10 ? WALK_ON_RED_BLOCK : BEFORE_RED_BLOCK_DOWN);
+            break;
+        case BEFORE_RED_BLOCK_DOWN:
+            Order_to_Robot(GO_DOWN);
+            nextState = BEFORE_BOMB;
+            break;
+        case BEFORE_BOMB:
+            for(iter=0; iter<2; iter++) Order_to_Robot(WALK);
+
+            nextState = BEFORE_BOMB;
+        default:
+            break;
+    }
+    if(nextState == -1) {
+        printf("kajebiii's code is wrong! [state : %d]", nowState);
+        exit(0);
+    }
+
+    *state = nextState;
+
+/*
 	printf("[cnt %d]\n", ++cnt);
 
     if(cnt >= 21 && cnt <= 33) {
@@ -188,7 +294,7 @@ int MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
         printf("LineSlope is %.0f\n", getColorLineSlope(BLACK));
         printf("EndBarricade is %s\n", isEndBarricadeOpen()?"Open":"Close");
     }
-
-    return 0;
+*/
+    return;
 }
 

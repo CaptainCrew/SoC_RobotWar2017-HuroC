@@ -9,70 +9,85 @@
 #include "uart_api.h"
 #include "img_analysis.h"
 
-const int BASE = 1, WALK = 2;
-const int LEFT_SMALL = 3, LEFT_LARGE = 4;
-const int RIGHT_SMALL = 5, RIGHT_LARGE = 6;
-const int TURN_LEFT_SMALL = 7, TURN_LEFT_LARGE = 8;
-const int TURN_RIGHT_SMALL = 9, TURN_RIGHT_LARGE = 10;
-const int CAMERA_45 = 11, CAMERA_60 = 12;
-const int CAMERA_RIGHT = 13;
+/*
+#define BASE (1)
+#define WALK (2)
+#define LEFT_SMALL (3)
+#define LEFT_LARGE (4)
+#define RIGHT_SMALL (5)
+#define RIGHT_LARGE (6)
+#define TURN_LEFT_SMALL (7)
+#define TURN_LEFT_LARGE (8)
+#define TURN_RIGHT_SMALL (9)
+#define TURN_RIGHT_LARGE (10)
+#define CAMERA_45 (11)
+#define CAMERA_60 (12)
+#define CAMERA_RIGHT (13)
+#define GO_UP (14)
+#define GO_DOWN (15)
+*/ 
 
 void Order_to_Robot(int motion_number)
 {
-  Motion(motion_number); // DH : 이제 이런식으로 호출못함
-  //motion1(); // DH : robot_protocol.c에 만들어놓은 함수명으로 호출해야함
-  double delaySecond = 0;
-  if(motion_number == BASE) delaySecond = 10;
-  if(motion_number == WALK) delaySecond = 10;
-  if(motion_number == LEFT_SMALL) delaySecond = 10;
-  if(motion_number == LEFT_LARGE) delaySecond = 10;
-  if(motion_number == RIGHT_SMALL) delaySecond = 10;
-  if(motion_number == RIGHT_LARGE) delaySecond = 10;
-  if(motion_number == TURN_LEFT_SMALL) delaySecond = 10;
-  if(motion_number == TURN_LEFT_LARGE) delaySecond = 10;
-  if(motion_number == TURN_RIGHT_SMALL) delaySecond = 10;
-  if(motion_number == TURN_RIGHT_LARGE) delaySecond = 10;
-  if(motion_number == CAMERA_45) delaySecond = 10;
-  if(motion_number == CAMERA_60) delaySecond = 10;
-  if(motion_number == CAMERA_RIGHT) delaySecond = 10;
+    printf("Motion Start [%d] : ", motion_number);
+    switch(motion_number) {
+        case BASE: puts("BASE"); break;
+        case WALK: puts("WALK"); break;
+        case LEFT_SMALL: puts("LEFT_SMALL"); break;
+        case LEFT_LARGE: puts("LEFT_LARGE"); break;
+        case RIGHT_SMALL: puts("RIGHT_SMALL"); break;
+        case RIGHT_LARGE: puts("RIGHT_LARGE"); break;
+        case TURN_LEFT_SMALL: puts("TURN_LEFT_SMALL"); break;
+        case TURN_LEFT_LARGE: puts("TURN_LEFT_LARGE"); break;
+        case TURN_RIGHT_SMALL: puts("TURN_RIGHT_SMALL"); break;
+        case TURN_RIGHT_LARGE: puts("TURN_RIGHT_LARGE"); break;
+        case CAMERA_45: puts("CAMERA_45"); break;
+        case CAMERA_60: puts("CAMERA_60"); break;
+        case CAMERA_RIGHT: puts("CAMERA_RIGHT"); break;
+        case GO_UP: puts("GO_UP"); break;
+        case GO_DOWN: puts("GO_DOWN"); break;
+        default: puts("PLEASE EDIT CODE!!"); break;
+    }
 
-  DelayLoop(5);
-  /*
-  switch(motion_number)
-  {
-     case F_WALK:
-      Motion(F_WALK);
-      DelayLoop(4500000);
-     break;
-     case F_WALK_5:
-      Motion(F_WALK_5);
-      DelayLoop(16000000);
-    break;
-    case F_WALK_20:
-      Motion(F_WALK_20);
-      DelayLoop(55000000);
-    break;
-    case STAIR_LOL:
-      Motion(STAIR_LOL);
-      DelayLoop(165000000);
-    break;
-    case L_TURN:
-      Motion(L_TURN);
-      DelayLoop(10000000);
-    break;
-    case R_TURN:
-      Motion(R_TURN);
-      DelayLoop(10000000);
-    break;
-    case L_WALK:
-      Motion(L_WALK);
-      DelayLoop(2500000);
-    break;
-    case R_WALK:
-      Motion(R_WALK);
-      DelayLoop(2500000);
-    break;
-  }
-*/
-  return;
+    Motion(motion_number);
+
+    int delayMilliSecond = 5000;
+    switch(motion_number) {
+        case BASE:
+            delayMilliSecond = 1000; break;
+        case WALK: 
+            delayMilliSecond = 1000; break;
+        case LEFT_SMALL: 
+            delayMilliSecond = 1000; break;
+        case LEFT_LARGE: 
+            delayMilliSecond = 1000; break;
+        case RIGHT_SMALL: 
+            delayMilliSecond = 1000; break;
+        case RIGHT_LARGE: 
+            delayMilliSecond = 1000; break;
+        case TURN_LEFT_SMALL: 
+            delayMilliSecond = 1000; break;
+        case TURN_LEFT_LARGE: 
+            delayMilliSecond = 1000; break;
+        case TURN_RIGHT_SMALL: 
+            delayMilliSecond = 1000; break;
+        case TURN_RIGHT_LARGE: 
+            delayMilliSecond = 1000; break;
+        case CAMERA_45: 
+            delayMilliSecond = 1000; break;
+        case CAMERA_60: 
+            delayMilliSecond = 1000; break;
+        case CAMERA_RIGHT: 
+            delayMilliSecond = 1000; break;
+        case GO_UP: 
+            delayMilliSecond = 1000; break;
+        case GO_DOWN: 
+            delayMilliSecond = 1000; break;
+        default:
+            delayMilliSecond = 1000; break;
+    }
+
+
+    DelayLoop(delayMilliSecond);
+    return;
 }

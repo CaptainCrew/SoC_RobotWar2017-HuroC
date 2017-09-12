@@ -14,7 +14,7 @@ void DelayLoop(int delay_time)
 	while(delay_time)
 		delay_time--;
 }
-
+	
 void Send_Command(unsigned char Ldata, unsigned char Ldata1)
 {
 	unsigned char Command_Buffer[6] = {0,};
@@ -34,32 +34,5 @@ void Send_Command(unsigned char Ldata, unsigned char Ldata1)
 
 
 void Motion(int number) {
-	printf("[%d] motion started\n", number);
 	Send_Command(number, 0xff - number);
-	DelayLoop(5000);
-	printf("[%d] motion end\n", number);
-}
-
-void motion1()
-{
-	printf("\nmotion started\n");
-	Send_Command(0x01, 0xfe);
-	DelayLoop(5000); // 5000ms
-	printf("motion end\n");
-}
-
-void motion2()
-{
-	printf("\nmotion started\n");
-	Send_Command(0x02, 0xfd);
-	DelayLoop(5000); // 5000ms
-	printf("motion end\n");
-}
-
-void motion3()
-{
-	printf("\nmotion started\n");
-	Send_Command(0x03, 0xfc);
-	DelayLoop(5000); // 5000ms
-	printf("motion end\n");
 }
