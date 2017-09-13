@@ -30,6 +30,7 @@
 void Order_to_Robot(int motion_number)
 {
     printf("Motion Start [%d] : ", motion_number);
+    /*
     switch(motion_number) {
         case BASE: puts("BASE"); break;
         case WALK: puts("WALK"); break;
@@ -48,6 +49,7 @@ void Order_to_Robot(int motion_number)
         case GO_DOWN: puts("GO_DOWN"); break;
         default: puts("PLEASE EDIT CODE!!"); break;
     }
+    */
 
     Motion(motion_number);
 
@@ -77,6 +79,8 @@ void Order_to_Robot(int motion_number)
             delayMilliSecond = 2500; break;
         case TURN_RIGHT_LARGE: 
             delayMilliSecond = 2500; break;
+        case CAMERA_0: 
+            delayMilliSecond = 1000; break;
         case CAMERA_45: 
             delayMilliSecond = 1000; break;
         case CAMERA_55: 
@@ -85,13 +89,19 @@ void Order_to_Robot(int motion_number)
             delayMilliSecond = 4000; break;
         case CAMERA_RIGHT_END: 
             delayMilliSecond = 4000; break;
-        case GO_UP: 
+        case KICK: 
             delayMilliSecond = 1000; break;
-        case GO_DOWN: 
-            delayMilliSecond = 1000; break;
+        case UP_2CM: 
+            delayMilliSecond = 25000; break;
+        case DOWN_2CM: 
+            delayMilliSecond = 25000; break;
+        case UP_4CM: 
+            delayMilliSecond = 25000; break;
+        case GO_4CM: 
+            delayMilliSecond = 25000; break;
         default:
             delayMilliSecond = 1000; break;
-    }
+   }
     /*
 #define BASE (1)
 #define WALK (2)

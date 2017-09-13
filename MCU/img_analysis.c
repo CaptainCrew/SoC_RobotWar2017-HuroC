@@ -223,23 +223,37 @@ bool isEndBarricadeOpen() {
 
 //it is start
 #define WAIT_START_BARRICADE (0)
-#define SEE_FRONT_IN_START (1)
-#define OPEN_START_BARRICADE (2)
-#define LETS_FIND_RED_BLOCK (3)
-#define FOUND_RED_BLOCK (4)
-#define BEFORE_RED_BLOCK_UP (5)
-#define WALK_ON_RED_BLOCK (6)
-#define BEFORE_RED_BLOCK_DOWN (7)
-#define BEFORE_BOMB (8)
-#define BEFORE_BEFORE_BLUE (9)
-#define BEFORE_BLUE (10)
-#define AFTER_BLUE (11)
-#define LETS_TURN_LEFT (12)
-#define LETS_FIND_GREEN_BLOCK (13)
-#define FOUND_GREEN_BLOCK (14)
-#define BEFORE_GREEN_BLOCK_UP (15)
-#define WALK_ON_GREEN_BLOCK (16)
-#define BEFORE_GREEN_BLOCK_DOWN (17)
+#define SEE_FRONT_IN_START (100)
+#define OPEN_START_BARRICADE (200)
+#define LETS_FIND_RED_BLOCK (300)
+#define FOUND_RED_BLOCK (400)
+#define BEFORE_RED_BLOCK_UP (500)
+#define WALK_ON_RED_BLOCK (600)
+#define BEFORE_RED_BLOCK_DOWN (700)
+#define BEFORE_BOMB (800)
+#define BEFORE_BEFORE_BLUE (900)
+#define BEFORE_BLUE (1000)
+#define AFTER_BLUE (1100)
+#define LETS_TURN_LEFT_1 (1200)
+#define LETS_FIND_GREEN_BLOCK (1300)
+#define FOUND_GREEN_BLOCK (1400)
+#define BEFORE_GREEN_BLOCK_UP (1500)
+#define WALK_ON_GREEN_BLOCK (1600)
+#define BEFORE_GREEN_BLOCK_DOWN (1700)
+#define LETS_FIND_BALL (1800)
+#define FOUND_BALL (1900)
+#define LETS_TURN_LEFT_2 (2000)
+#define LETS_FIND_YELLOW (2100)
+#define FOUND_YELLOW (2200)
+#define BEFORE_YELLOW_BLOCK (2300)
+#define WALK_ON_YELLOW_BLOCK (2400)
+#define AFTER_YELLOW_BLOCK (2500)
+#define LETS_FIND_END (2700)
+#define FOUND_END (2800)
+#define WAIT_END_BARRICADE (2900)
+#define SEE_FRONT_IN_END (3000)
+#define OPEN_END_BARRICADE (3100)
+#define FINISH (3200)
 
 int nowState = -1, nextState = -1;
 
@@ -256,7 +270,11 @@ void chkDirectionFuction() {
             chkFrontDirection = MAKE_LINE_DEGREE_ZERO;
             break;
         case MAKE_LINE_DEGREE_ZERO:
-            degree = getColorLineSlopeDown(chkColor);
+            if(chkColor == BLACK)
+                degree = getColorLineSlopeDown(chkColor);
+            else
+                degree = getColorLineSlopeUp(chkColor);
+
             printf("degree : %d\n", degree);
             Order_to_Robot(CAMERA_RIGHT_END);
 
@@ -288,6 +306,9 @@ void BOMB_Function() {
     //Order_to_Robot(RIGHT_LARGE);
     nextState = BEFORE_BOMB;
 }
+void GOLF_Function() {
+    //something
+}
 void realFunction(int *state) {
     if(cnt == 1) {
         DelayLoop(15000);
@@ -303,6 +324,8 @@ void realFunction(int *state) {
     }
 
     int iter;
+
+    int findBallCnt = 0;
     switch(nowState) {
         case WAIT_START_BARRICADE:
             Order_to_Robot(CAMERA_0);
@@ -310,7 +333,7 @@ void realFunction(int *state) {
             DelayLoop(1500);            
             break;
         case SEE_FRONT_IN_START:
-            printf("isStartOpen : %d\n", (int)isStartBarricadeOpen());
+//            printf("isStartOpen : %d\n", (int)isStartBarricadeOpen());
             nextState = isStartBarricadeOpen() ? OPEN_START_BARRICADE : WAIT_START_BARRICADE;
             DelayLoop(500);
             break;
@@ -330,27 +353,15 @@ void realFunction(int *state) {
             nextState = BEFORE_RED_BLOCK_UP;
             break;
         case BEFORE_RED_BLOCK_UP:
-            Order_to_Robot(KICK);
-            Order_to_Robot(KICK);
-            Order_to_Robot(KICK);
-            Order_to_Robot(KICK);
-            Order_to_Robot(GO_UP);
-
-            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = RED;
+            Order_to_Robot(UP_4CM);
+//            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = RED;
             nextState = WALK_ON_RED_BLOCK;
             break;
         case WALK_ON_RED_BLOCK:
-            for(iter=0; iter<2; iter++) Order_to_Robot(WALK);
-
-            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = RED;
-            nextState = (getPercentColor(RED) > 10 ? WALK_ON_RED_BLOCK : BEFORE_RED_BLOCK_DOWN);
+            Order_to_Robot(GO_4CM);
+            nextState = BEFORE_RED_BLOCK_DOWN;
             break;
         case BEFORE_RED_BLOCK_DOWN:
-            Order_to_Robot(KICK);
-            Order_to_Robot(KICK);
-            Order_to_Robot(KICK);
-            Order_to_Robot(KICK);
-//            Order_to_Robot(GO_DOWN);
             nextState = BEFORE_BOMB;
             break;
 
@@ -367,29 +378,34 @@ void realFunction(int *state) {
             nextState = BEFORE_BLUE;
             break;
         case BEFORE_BLUE:
-            Order_to_Robot(GO_UP_4CM);
+        //it will be changed
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
+            Order_to_Robot(KICK);
             nextState = AFTER_BLUE;
             break;
         case AFTER_BLUE:
-            Order_to_Robot(STAND_UP);
-            nextState = LETS_TURN_LEFT;
+//            Order_to_Robot(STAND_UP);
+            nextState = LETS_TURN_LEFT_1;
             break;
-        case LETS_TURN_LEFT:
+        case LETS_TURN_LEFT_1:
             for(iter=0; iter<3; iter++) Order_to_Robot(TURN_LEFT_LARGE);
 
             chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = BLACK;
             nextState = LETS_FIND_GREEN_BLOCK;
             break;
         case LETS_FIND_GREEN_BLOCK:
-            for(iter=0; iter<3; iter++) Order_to_Robot(WALK);
-            nextState = (getPercentColor(GREEN) >= 30 ? FOUND_GREEN_BLOCK : LETS_FIND_GREEN_BLOCK);
+            Order_to_Robot(WALK_5);
+            nextState = (getPercentColor(GREEN) >= 10 ? FOUND_GREEN_BLOCK : LETS_FIND_GREEN_BLOCK);
             break;
         case FOUND_GREEN_BLOCK:
-            for(iter=0; iter<5; iter++) Order_to_Robot(WALK);
+            Order_to_Robot(WALK_5);
             nextState = BEFORE_GREEN_BLOCK_UP;
             break;
         case BEFORE_GREEN_BLOCK_UP:
-            Order_to_Robot(GO_UP);
+            Order_to_Robot(UP_2CM);
 
             chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = GREEN;
             nextState = WALK_ON_GREEN_BLOCK;
@@ -398,16 +414,71 @@ void realFunction(int *state) {
             for(iter=0; iter<2; iter++) Order_to_Robot(WALK);
 
             chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = GREEN;
-            nextState = (getPercentColor(GREEN) > 10 ? WALK_ON_RED_BLOCK : BEFORE_RED_BLOCK_DOWN);
+            nextState = (getPercentColor(GREEN) > 10 ? WALK_ON_GREEN_BLOCK : BEFORE_GREEN_BLOCK_DOWN);
             break;
         case BEFORE_GREEN_BLOCK_DOWN:
-            for(iter=0; iter<3; iter++) Order_to_Robot(WALK);
-            Order_to_Robot(GO_DOWN);
-            nextState = BEFORE_BOMB;
+            Order_to_Robot(WALK_5);
+            Order_to_Robot(DOWN_2CM);
+            nextState = LETS_FIND_BALL;
             break;
+        case LETS_FIND_BALL:
+            for(iter=0; iter<3; iter++) Order_to_Robot(WALK);
+            //something
+            nextState = FOUND_BALL;
+            break;
+        case FOUND_BALL:
+            for(iter=0; iter<2; iter++) Order_to_Robot(KICK);
+            nextState = LETS_TURN_LEFT_2;
+            break;
+        case LETS_TURN_LEFT_2:
+            for(iter=0; iter<3; iter++) Order_to_Robot(TURN_LEFT_LARGE);
 
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = BLACK;
+            nextState = LETS_FIND_YELLOW;
+            break;
+        case LETS_FIND_YELLOW:
+            Order_to_Robot(WALK_5);
+            nextState = (getPercentColor(YELLOW) >= 10 ? FOUND_YELLOW : LETS_FIND_YELLOW);
+            break;
+        case FOUND_YELLOW:
+            Order_to_Robot(WALK_5);
+            nextState = BEFORE_YELLOW_BLOCK;
+            break;
+        case BEFORE_YELLOW_BLOCK:
+            Order_to_Robot(UP_2CM);
 
-
+            chkFrontDirection = LETS_MAKE_CAMERA_RIGHT; chkColor = RED;
+            nextState = WALK_ON_RED_BLOCK;
+            break;
+        case WALK_ON_YELLOW_BLOCK:
+            Order_to_Robot(DOWN_2CM);
+            break;
+        case AFTER_YELLOW_BLOCK:
+            nextState = LETS_FIND_END;
+            break;
+        case LETS_FIND_END:
+            Order_to_Robot(WALK_5);
+            //something
+            nextState = FOUND_END;
+            break;
+        case FOUND_END:
+            Order_to_Robot(WALK_5);
+            nextState = WAIT_END_BARRICADE;
+            break;
+        case WAIT_END_BARRICADE:
+            Order_to_Robot(CAMERA_0);
+            nextState = SEE_FRONT_IN_END;
+            break;
+        case SEE_FRONT_IN_END:
+            nextState = isEndBarricadeOpen() ? OPEN_END_BARRICADE : WAIT_END_BARRICADE;
+            DelayLoop(500);
+            break;
+        case OPEN_END_BARRICADE:
+            Order_to_Robot(WALK_5);
+            nextState = FINISH;
+            break;
+        case FINISH:
+            break;
         default:
             break;
     }
@@ -418,6 +489,13 @@ void realFunction(int *state) {
 
     *state = nextState;
 }
+
+#define KICK (18)
+#define UP_2CM (19)
+#define DOWN_2CM (20)
+#define UP_4CM (21)
+#define GO_4CM (22)
+
 void watchColor();
 void onlyChkLine();
 void printValues();
@@ -441,9 +519,9 @@ void MCU_analysis(U16 *_buf, Color *_labelData, int* state) {
 
 void watchColor() {
     if(cnt == 1) {
-        Order_to_Robot(CAMERA_0);
+//        Order_to_Robot(CAMERA_0);
 //        Order_to_Robot(CAMERA_RIGHT);
-        DelayLoop(1000);
+//        DelayLoop(1000);
     }
     return;
 }
@@ -471,5 +549,5 @@ void motionTest() {
         DelayLoop(15000);
     }
     Order_to_Robot(cnt);
-    DelayLoop(3000);
+//    DelayLoop(3000);
 }
